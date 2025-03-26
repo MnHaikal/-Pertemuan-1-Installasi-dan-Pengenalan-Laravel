@@ -2,57 +2,36 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+use App\Models\Product; // Pastikan model dikenali dengan benar
 
-Route::get('/home', function () {
-    return "
-    <div style='text-align: center;'>
-        <h2>Selamat datang di TikTok Shop Clone</h2>
-        <br><br>
-        <a href='/kategori'>Kategori Produk</a>
-        <br><br>
-        <a href='/produk-terlaris'>Produk Terlaris</a>
-        <br><br>
-        <a href='/promo-flash-sale'>Promo Flash Sale</a>
-        <br><br>
-        <a href='/keranjang'>Keranjang Saya</a>
-        <br><br>
-        <a href='/checkout'>Lanjut ke Pembayaran</a>
-    </div>
-    ";
-});
+// Route utama menampilkan homepage
+Route::view('/', 'web.homepage')->name('home');
 
-// Halaman kategori
-Route::get('/kategori', function () {
-    return 'Ini adalah halaman kategori produk di TikTok Shop';
-});
+// Route untuk halaman daftar produk
+Route::get('product', function () {
+    $products = Product::all(); // Ambil semua produk dari database
+    return view('web.product', compact('products'));
+});return view('product');
 
-// Halaman produk terlaris
-Route::get('/produk-terlaris', function () {
-    return 'Ini adalah halaman produk terlaris di TikTok Shop';
-});
+// Route untuk halaman single product berdasarkan slug
+Route::get('product/{slug}', function ($slug) {
+    $product = Product::where('slug', $slug)->firstOrFail(); // Cari produk berdasarkan slug
+    return view('web.product-detail', compact('product'));
+});return view ('product.detail');
 
-// Halaman promo flash sale
-Route::get('/promo-flash-sale', function () {
-    return 'Ini adalah halaman promo flash sale TikTok Shop';
-});
+// Route untuk kategori
+Route::view('categories', 'web.categories')->name('categories');
 
-// Halaman keranjang belanja
-Route::get('/keranjang', function () {
-    return 'Ini adalah halaman keranjang saya di TikTok Shop';
-});
+// Route untuk single kategori
+Route::get('category/{slug}', function ($slug) {
+    return view('web.category-detail', ['slug' => $slug]);
+})->name('category.detail');
 
-// Halaman checkout (memerlukan login)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/checkout', function () {
-        return 'Ini adalah halaman pembayaran TikTok Shop';
-    });
-});
+// Route untuk cart & checkout
+Route::view('cart', 'web.cart')->name('cart');
+Route::view('checkout', 'web.checkout')->name('checkout');
 
-// Halaman utama
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
-
+// Halaman utama (hanya bisa diakses jika login)
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -65,4 +44,5 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 });
 
+// Menggunakan file auth bawaan Laravel
 require __DIR__.'/auth.php';
